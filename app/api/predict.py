@@ -77,7 +77,7 @@ async def predict(item: Item):
     conn = sqlite3.connect('data/cannabis.sqlite3')
     curs = conn.cursor()
     print(pred)
-    curs.execute(f"SELECT * FROM Cannabis WHERE strain_id == {pred[0][0]}")
+    strain_query = curs.execute(f"SELECT * FROM Cannabis WHERE strain_id == {pred[0][0]}")
 
     strain = curs.fetchall()
     print(strain)
