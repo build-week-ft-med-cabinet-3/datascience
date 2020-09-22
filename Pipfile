@@ -6,6 +6,12 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
+uvicorn = "*"
+pandas = "*"
+fastapi = "*"
+sklearn = "*"
+spacy = "*"
+plotly = "*"
 
 [requires]
 python_version = "3.8"
