@@ -3,22 +3,49 @@ import random
 from fastapi import APIRouter
 import pandas as pd
 from pydantic import BaseModel, Field, validator
+import numpy as np
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.neighbors import NearestNeighbors
+import spacy
+from spacy.tokenizer import Tokenizer
+from spacy.lang.en import English
+import sqlite3
+from .app_db import create_db
 
 
-log = logging.getLogger(__name__)  # Jeremy might be able to explain
+log = logging.getLogger(__name__)
 router = APIRouter()  # this establishes what router we are using (i.e FLASK)
 df = pd.read_csv("data/cannabis_final.csv")
 
 
-# def searchfunc():  # this is the function steve and jeremy will give me, used in ML training
-#     """
-#         Flexible function that searches for cannabis strains.
-#         ### Request Body
-#         - user_input str
-#         - num_results int: default 10
-#         ### Response
-#         - `strain_recommendation`: dictionary of strain recommendations
-#         """
+def searchfunc(user_input, num_results=10):  # this is the function steve and jeremy will give me, used in ML training
+    """Flexible function that searches for cannabis strains.
+    ### Request Body
+    - user_input str
+    - num_results int: default 10
+    ### Response
+    - `strain_recommendation`: dictionary of strain recommendations
+    """
+    user_input = [user_input]
+    nlp = English()
+    tokenizer = Tokenizer(nlp.vocab)
+    tf = TfidfVectorizer(stop_words='english')
+    dtm = tf.fit_transform(df['ailment_tokens'])
+    dtm = pd.DataFrame(dtm.todense(), columns=tf.get_feature_names())
+    nr = num_results
+    nn = NearestNeighbors(n_neighbors=nr, algorithm='ball_tree')
+    nn.fit(dtm)
+    dtf = tf.transform(user_input)
+    _, output = nn.kneighbors(dtf.todense())
+    recommendations = []
+    for n in output:
+        for row in n:
+            recommendations.append(row)
+    result = []
+    for i in recommendations:
+        data = (df.loc[i, :])
+        result.append(data)
+    return {'strain_recommendations': result}
 
 
 class Item(BaseModel):
@@ -42,38 +69,15 @@ class Item(BaseModel):
 @router.post('/predict')
 async def predict(item: Item):
     """
-    # Make random baseline predictions for classification problem 🔮
-    #
-    # ### Request Body
-    # - `x1`: positive float
-    # - `x2`: integer
-    # - `x3`: string
-    #
-    # ### Response
-    # - `prediction`: boolean, at random
-    # - `predict_proba`: float between 0.5 and 1.0,
-    # representing the predicted class's probability
-    #
-    # Replace the placeholder docstring and fake predictions with your own model.
-    # """
+      # Make random baseline predictions for classification problem 🔮
+      """
 
     X_new = item.to_df()
     log.info(X_new)
-    # y_pred = random.choice([True, False])
-    # y_pred_proba = random.random() / 2 + 0.5
-    return {
-        'recommendations': {
-         "strain_recommendations": [
-      {
-        "name": "Hawaiian Thunder Fuck",
-        "type": "hybrid",
-        "flavors": "Sweet, Berry, Pungent",
-        "positive_effects": "Relaxed, Euphoric, Happy, Talkative",
-        "negative_effects": "Dry Mouth, Paranoid",
-        "ailment": "Depression, Insomnia, Pain, Stress, Nausea, Headache",
-        "search": "Hawaiian Thunder Fuck,Relaxed, Euphoric, Happy, Talkative,Sweet, Berry, Pungent,Depression, "
-                  "Insomnia, Pain, Stress, Nausea, Headache"
-      }
-    ]}}
-    # this is going to be the name of the prediction function, it will change
-    # 'probability': y_pred_proba
+    return {'recommendations': searchfunc(item.symptoms, num_results=5)}
+
+
+@router.get('/createDB')
+async def make_db():
+    create_db()
+    return "Database Created!"
