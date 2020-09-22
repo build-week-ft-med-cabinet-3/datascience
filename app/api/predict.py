@@ -1,15 +1,11 @@
 import logging
-import random
 from fastapi import APIRouter
 import pandas as pd
-from pydantic import BaseModel, Field, validator
-import numpy as np
+from pydantic import BaseModel, Field
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.neighbors import NearestNeighbors
-import spacy
 from spacy.tokenizer import Tokenizer
 from spacy.lang.en import English
-import sqlite3
 from .app_db import create_db
 
 
@@ -29,7 +25,7 @@ def searchfunc(user_input, num_results=10):  # this is the function steve and je
     user_input = [user_input]
     nlp = English()
     tokenizer = Tokenizer(nlp.vocab)
-    tf = TfidfVectorizer(stop_words='english')
+    tf = TfidfVectorizer(tokenizer=tokenizer, stop_words='english')
     dtm = tf.fit_transform(df['ailment_tokens'])
     dtm = pd.DataFrame(dtm.todense(), columns=tf.get_feature_names())
     nr = num_results
