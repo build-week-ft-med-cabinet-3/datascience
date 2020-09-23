@@ -51,19 +51,7 @@ def searchfunc(user_input, num_results=1):  # this is the function steve and jer
 class Item(BaseModel):
     """Use this data model to parse the request body JSON."""
 
-    symptoms: str #= Field(..., example='insomia')  # this takes any symptom as a string
-    # can also put a field for 'effects', 'flavors', 'strain', (if they do not concatnate the strings for us)
-
-    # def to_df(self):  # this will take our symptoms and takes it as a dictionary and makes it a dataframe for the model
-    #                   # to use
-    #     """Convert pydantic object to pandas dataframe with 1 row."""
-    #     return pd.DataFrame([dict(self)])
-
-    # @validator('x1')
-    # def x1_must_be_positive(cls, value):
-    #     """Validate that x1 is a positive number."""
-    #     assert value > 0, f'x1 == {value}, must be > 0'
-    #     return value
+    symptoms: str
 
 
 @router.post('/predict')
@@ -76,17 +64,17 @@ async def predict(item: Item):
 
     conn = sqlite3.connect('data/cannabis.sqlite3')
     curs = conn.cursor()
-    print(pred)
-    strain_query = curs.execute(f"SELECT * FROM Cannabis WHERE strain_id == {pred[0][0]}")
-
+    # strain_query = curs.execute(f"SELECT * FROM Cannabis WHERE strain_id == {pred[0][0]}")
+    curs.execute(f"SELECT * FROM Cannabis WHERE strain_id == {pred[0][0]}")
     strain = curs.fetchall()
-    print(strain)
 
+    keys = ['ID', 'Name', 'Rating', 'Type', 'Ailments', 'Positive_Effects', 'Negative_Effects', 'Description', 'Effects', 'Flavors', 'Strain_ID']
+    suggestion = {k: v for k, v in zip(keys, strain[0])}
+    # for key in ['Ailments', 'Positive_Effects', 'Negative_Effects', 'Effects', 'Flavors']:
+    #     suggestion[key] = suggestion[key].split(',')
 
+    return JSONResponse(suggestion)
 
-    #return 'Prediction!'
-    return JSONResponse(strain)
-    #return {'recommendations': searchfunc(item.symptoms, num_results=5)}
 
 
 @router.get('/createDB')
