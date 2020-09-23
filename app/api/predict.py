@@ -13,7 +13,9 @@ import sqlite3
 
 log = logging.getLogger(__name__)
 router = APIRouter()  # this establishes what router we are using (i.e FLASK)
-df = pd.read_csv("data/cannabis_final.csv")
+df = pd.read_csv("data/cannabis_final.csv", index_col='strain_id')
+#df = df.drop('Unnamed: 0', axis=1)
+print(df.head())
 
 
 def searchfunc(user_input, num_results=1):  # this is the function steve and jeremy will give me, used in ML training
@@ -28,6 +30,7 @@ def searchfunc(user_input, num_results=1):  # this is the function steve and jer
     nlp = English()
     #tokenizer = Tokenizer(nlp.vocab)
     tf = TfidfVectorizer(stop_words='english')
+    print(df.head())
     dtm = tf.fit_transform(df['ailment_tokens'])
     dtm = pd.DataFrame(dtm.todense(), columns=tf.get_feature_names())
     nr = num_results
@@ -61,11 +64,13 @@ async def predict(item: Item):
       """
 
     pred = searchfunc(item.symptoms)
+    print(pred)
 
     conn = sqlite3.connect('data/cannabis.sqlite3')
     curs = conn.cursor()
-    # strain_query = curs.execute(f"SELECT * FROM Cannabis WHERE strain_id == {pred[0][0]}")
+
     curs.execute(f"SELECT * FROM Cannabis WHERE strain_id == {pred[0][0]}")
+
     strain = curs.fetchall()
 
     keys = ['ID', 'Name', 'Rating', 'Type', 'Ailments', 'Positive_Effects', 'Negative_Effects', 'Description', 'Effects', 'Flavors', 'Strain_ID']
