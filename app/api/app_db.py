@@ -3,8 +3,9 @@ import sqlite3
 
 
 def create_db():
-    df = pd.read_csv('data/cannabis_final.csv')
-    df = df.drop('Unnamed: 0', axis=1)
+    df = pd.read_csv('data/cannabis_final.csv', index_col='strain_id')
+    #df = df.set_index('strain_id')
+    #df = df.drop('Unnamed: 0', axis=1)
     conn = sqlite3.connect('data/cannabis.sqlite3')
     curs = conn.cursor()
     curs.execute("DROP TABLE IF EXISTS Cannabis")
