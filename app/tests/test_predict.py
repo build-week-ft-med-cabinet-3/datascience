@@ -12,13 +12,11 @@ def test_valid_input():
         '/predict',
         json={
             'symptoms': 'pain'
-            'results': 5
         }
     )
     body = response.json()
     assert response.status_code == 200
     assert isinstance(item.symptoms, str)
-    assert 0 < item.results
 
 
 def test_invalid_input():
@@ -27,11 +25,9 @@ def test_invalid_input():
         '/predict',
         json={
             'symptoms': 420
-            'results': 'All the strains'
         }
     )
     body = response.json()
     assert response.status_code == 422
     assert 'symptoms' in body['detail'][0]['loc']
-    assert isinstance(item.results, str)
     
