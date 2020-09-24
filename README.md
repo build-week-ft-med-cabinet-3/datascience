@@ -89,7 +89,7 @@ The following ailments are available for use with the API for suggesting strains
 
 Navigating to the WebApp in your browser, rather locally or deployed, the user will be presented with the FastAPI test page, allowing the user to modify the input string and retreive strain recommendations.
 
-### ![](/images/AP_1.png)
+### ![](/images/API_1.png)
 
 1: Click on `Try it out` to enable the ability to edit the Request Body.
 
@@ -103,7 +103,7 @@ Navigating to the WebApp in your browser, rather locally or deployed, the user w
 
 2: After modifying the input string, click on the `Exectue` button to send the request to the API, and see the response come back in the interface:
 
-### ![](/images/AP_2.png)
+### ![](/images/API_2.png)
 
 ---
 
