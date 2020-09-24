@@ -22,7 +22,6 @@ class Item(BaseModel):
     """Use this data model to parse the request body JSON."""
 
     symptoms: str = Field(..., example='pain')
-    results: int = Field(..., example=5)
 
 
 @router.post('/predict')
