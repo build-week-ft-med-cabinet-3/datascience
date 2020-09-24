@@ -18,17 +18,15 @@ df = pd.read_csv("data/cannabis_final.csv", index_col='strain_id')
 print(df.head())
 
 
-def searchfunc(user_input, num_results=1):  # this is the function steve and jeremy will give me, used in ML training
+def searchfunc(user_input, num_results=5):  # this is the function steve and jeremy will give me, used in ML training
     """Flexible function that searches for cannabis strains.
     ### Request Body
-    - user_input str
-    - num_results int: default 10
+    - user_input str : string of ailments to be trained on
+    - num_results int : number of strains desired, default 5
     ### Response
-    - `strain_recommendation`: dictionary of strain recommendations
+    - `output`: a list of indices matching predicted strains
     """
     user_input = [user_input]
-    nlp = English()
-    #tokenizer = Tokenizer(nlp.vocab)
     tf = TfidfVectorizer(stop_words='english')
     print(df.head())
     dtm = tf.fit_transform(df['ailment_tokens'])
@@ -39,22 +37,13 @@ def searchfunc(user_input, num_results=1):  # this is the function steve and jer
     dtf = tf.transform(user_input)
     _, output = nn.kneighbors(dtf.todense())
     return output
-    # recommendations = []
-    # for n in output:
-    #     for row in n:
-    #         recommendations.append(row)
-    # result = []
-    # for i in recommendations:
-    #     data = (df.loc[i, :])
-    #     result.append(data)
-    # #return {'strain_recommendations': result}
-    # return result
 
 
 class Item(BaseModel):
     """Use this data model to parse the request body JSON."""
 
-    symptoms: str
+    symptoms: str = Field(..., example='pain')
+    results: int = Field(..., example=5)
 
 
 @router.post('/predict')
@@ -63,7 +52,7 @@ async def predict(item: Item):
       # Make random baseline predictions for classification problem 🔮
       """
 
-    pred = searchfunc(item.symptoms)
+    pred = searchfunc(user_input=item.symptoms, num_results=item.results)
     print(pred)
 
     conn = sqlite3.connect('data/cannabis.sqlite3')

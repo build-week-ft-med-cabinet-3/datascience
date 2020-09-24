@@ -1,3 +1,4 @@
+"""Tests for ensuring proper predict.py functionality"""
 from fastapi.testclient import TestClient
 
 from app.main import app
@@ -10,27 +11,27 @@ def test_valid_input():
     response = client.post(
         '/predict',
         json={
-            'x1': 3.14,
-            'x2': -42,
-            'x3': 'banjo'
+            'symptoms': 'pain'
+            'results': 5
         }
     )
     body = response.json()
     assert response.status_code == 200
-    assert body['prediction'] in [True, False]
-    assert 0.50 <= body['probability'] < 1
+    assert isinstance(item.symptoms, str)
+    assert 0 < item.results
 
 
 def test_invalid_input():
-    """Return 422 Validation Error when x1 is negative."""
+    """Return 422 Validation Error when symptoms is not a string"""
     response = client.post(
         '/predict',
         json={
-            'x1': -3.14,
-            'x2': -42,
-            'x3': 'banjo'
+            'symptoms': 420
+            'results': 'All the strains'
         }
     )
     body = response.json()
     assert response.status_code == 422
-    assert 'x1' in body['detail'][0]['loc']
+    assert 'symptoms' in body['detail'][0]['loc']
+    assert isinstance(item.results, str)
+    
